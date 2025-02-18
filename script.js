@@ -1,101 +1,105 @@
-/* Global Styles */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+// Get elements
+const taskInput = document.getElementById('taskInput');
+const addTaskButton = document.getElementById('addTaskButton');
+const taskList = document.getElementById('taskList');
+const noTasksMessage = document.getElementById('noTasksMessage');
+
+// Load tasks from localStorage
+let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+// Render tasks on page load
+window.onload = function() {
+    renderTasks();
+};
+
+// Add task functionality
+addTaskButton.addEventListener('click', function() {
+    const taskText = taskInput.value.trim();
+
+    if (taskText) {
+        const newTask = {
+            id: Date.now(),
+            text: taskText,
+            completed: false
+        };
+
+        tasks.push(newTask);
+        taskInput.value = ''; // Clear input field
+        saveTasks();
+        renderTasks();
+    }
+});
+
+// Delete task functionality
+function deleteTask(taskId) {
+    tasks = tasks.filter(task => task.id !== taskId);
+    saveTasks();
+    renderTasks();
 }
 
-body {
-    font-family: 'Arial', sans-serif;
-    background-color: #f3f3f3;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
+// Toggle task completion
+function toggleCompletion(taskId) {
+    const task = tasks.find(task => task.id === taskId);
+    if (task) {
+        task.completed = !task.completed;
+        saveTasks();
+        renderTasks();
+    }
 }
 
-.todo-container {
-    background-color: #fff;
-    width: 400px;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    text-align: center;
+// Edit task functionality
+function editTask(taskId) {
+    const task = tasks.find(task => task.id === taskId);
+    if (task) {
+        const newText = prompt("Edit your task:", task.text);
+        if (newText) {
+            task.text = newText;
+            saveTasks();
+            renderTasks();
+        }
+    }
 }
 
-h1 {
-    color: #333;
-    margin-bottom: 20px;
+// Render tasks to the page
+function renderTasks() {
+    taskList.innerHTML = ''; // Clear existing tasks
+    if (tasks.length === 0) {
+        noTasksMessage.classList.remove('hidden');
+    } else {
+        noTasksMessage.classList.add('hidden');
+        tasks.forEach(task => {
+            const li = document.createElement('li');
+            li.classList.toggle('completed', task.completed);
+            li.setAttribute('data-id', task.id);
+
+            const taskText = document.createElement('span');
+            taskText.textContent = task.text;
+            li.appendChild(taskText);
+
+            const toggleButton = document.createElement('button');
+            toggleButton.textContent = task.completed ? 'Undo' : 'Complete';
+            toggleButton.classList.add('toggle-btn');
+            toggleButton.addEventListener('click', () => toggleCompletion(task.id));
+            li.appendChild(toggleButton);
+
+            const editButton = document.createElement('button');
+            editButton.textContent = 'Edit';
+            editButton.classList.add('edit-btn');
+            editButton.addEventListener('click', () => editTask(task.id));
+            li.appendChild(editButton);
+
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete';
+            deleteButton.classList.add('delete-btn');
+            deleteButton.addEventListener('click', () => deleteTask(task.id));
+            li.appendChild(deleteButton);
+
+            taskList.appendChild(li);
+        });
+    }
 }
 
-input {
-    width: 75%;
-    padding: 10px;
-    border: 2px solid #ccc;
-    border-radius: 4px;
-    font-size: 16px;
+// Save tasks to localStorage
+function saveTasks() {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
 }
-
-button {
-    padding: 10px 20px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-left: 10px;
-    font-size: 16px;
-}
-
-button:hover {
-    background-color: #45a049;
-}
-
-#taskList {
-    list-style-type: none;
-    margin-top: 20px;
-    padding: 0;
-}
-
-#taskList li {
-    padding: 12px;
-    margin: 8px 0;
-    background-color: #f4f4f4;
-    border-radius: 6px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: background-color 0.3s ease;
-}
-
-#taskList li:hover {
-    background-color: #e7f7e7;
-}
-
-button.edit-btn {
-    background-color: #ffa500;
-}
-
-button.edit-btn:hover {
-    background-color: #ff8c00;
-}
-
-button.delete-btn {
-    background-color: #e74c3c;
-}
-
-button.delete-btn:hover {
-    background-color: #c0392b;
-}
-
-.hidden {
-    display: none;
-}
-
-#noTasksMessage {
-    color: #aaa;
-    font-style: italic;
-    margin-top: 20px;
-}
-
