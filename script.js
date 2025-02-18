@@ -47,19 +47,6 @@ function toggleCompletion(taskId) {
     }
 }
 
-// Edit task functionality
-function editTask(taskId) {
-    const task = tasks.find(task => task.id === taskId);
-    if (task) {
-        const newText = prompt("Edit your task:", task.text);
-        if (newText) {
-            task.text = newText;
-            saveTasks();
-            renderTasks();
-        }
-    }
-}
-
 // Render tasks to the page
 function renderTasks() {
     taskList.innerHTML = ''; // Clear existing tasks
@@ -69,24 +56,18 @@ function renderTasks() {
         noTasksMessage.classList.add('hidden');
         tasks.forEach(task => {
             const li = document.createElement('li');
-            li.classList.toggle('completed', task.completed);
             li.setAttribute('data-id', task.id);
+            li.classList.toggle('completed', task.completed);
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = task.completed;
+            checkbox.addEventListener('click', () => toggleCompletion(task.id));
 
             const taskText = document.createElement('span');
             taskText.textContent = task.text;
+            li.appendChild(checkbox);
             li.appendChild(taskText);
-
-            const toggleButton = document.createElement('button');
-            toggleButton.textContent = task.completed ? 'Undo' : 'Complete';
-            toggleButton.classList.add('toggle-btn');
-            toggleButton.addEventListener('click', () => toggleCompletion(task.id));
-            li.appendChild(toggleButton);
-
-            const editButton = document.createElement('button');
-            editButton.textContent = 'Edit';
-            editButton.classList.add('edit-btn');
-            editButton.addEventListener('click', () => editTask(task.id));
-            li.appendChild(editButton);
 
             const deleteButton = document.createElement('button');
             deleteButton.textContent = 'Delete';
@@ -102,4 +83,49 @@ function renderTasks() {
 // Save tasks to localStorage
 function saveTasks() {
     localStorage.setItem('tasks', JSON.stringify(tasks));
+}
+
+// Enable drag-and-drop functionality
+taskList.addEventListener('dragstart', function(e) {
+    if (e.target.tagName === 'LI') {
+        e.target.classList.add('dragging');
+    }
+});
+
+taskList.addEventListener('dragend', function(e) {
+    if (e.target.tagName === 'LI') {
+        e.target.classList.remove('dragging');
+        const allTasks = Array.from(taskList.children);
+        tasks = allTasks.map(task => {
+            const taskId = parseInt(task.getAttribute('data-id'));
+            const taskText = task.querySelector('span').textContent;
+            const taskCompleted = task.querySelector('input').checked;
+            return { id: taskId, text: taskText, completed: taskCompleted };
+        });
+        saveTasks();
+    }
+});
+
+taskList.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    const draggingTask = document.querySelector('.dragging');
+    const afterElement = getDragAfterElement(taskList, e.clientY);
+    if (afterElement == null) {
+        taskList.appendChild(draggingTask);
+    } else {
+        taskList.insertBefore(draggingTask, afterElement);
+    }
+});
+
+function getDragAfterElement(container, y) {
+    const draggableElements = [...container.querySelectorAll('li:not(.dragging)')];
+    return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) {
+            return { offset: offset, element: child };
+        } else {
+            return closest;
+        }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
 }
