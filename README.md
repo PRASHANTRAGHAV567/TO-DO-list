@@ -81,8 +81,7 @@ Contact
 
 For any queries or suggestions, feel free to reach out:
 
-Email: your.email@example.com
-
-GitHub: yourusername
+Email: prashantraghav359@gmail.com
+GitHuby: PRASHANTRAGHAV567
 
 
