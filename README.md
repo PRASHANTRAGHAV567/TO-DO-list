@@ -24,21 +24,6 @@ Technologies Used
 Programming Language: [Specify Language, e.g., html, JavaScript, CSS
 
 
-Installation
-
-1. Clone the repository:
-
-git clone https://github.com/yourusername/todo-list.git
-
-
-2. Navigate to the project directory:
-
-cd todo-list
-
-
-3. Install dependencies (if applicable):
-
-npm install  # For Node.js
 
 
 
